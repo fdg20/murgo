@@ -218,8 +218,8 @@ The seed script creates:
 ### Backend (Railway / Render / Fly.io)
 
 1. Connect GitHub repo, set root to `backend/`
-2. Build command: `npm run build`
-3. Start command: `npm run start:prod`
+2. Build command: `npm install && npx prisma generate && npm run build`
+3. Start command: `npm run start:prod` (runs `node dist/main.js`)
 4. Set all environment variables
 5. Run migrations: `npx prisma db push && npm run db:seed`
 
