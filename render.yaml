@@ -3,8 +3,8 @@ services:
     name: murgo-api
     runtime: node
     rootDir: backend
-    buildCommand: npm ci && npm run build
+    buildCommand: chmod +x render-build.sh && ./render-build.sh
     startCommand: npm run start:prod
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "20.14.0"

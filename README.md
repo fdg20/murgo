@@ -217,10 +217,12 @@ The seed script creates:
 
 ### Backend (Railway / Render / Fly.io)
 
+See **[backend/RENDER.md](backend/RENDER.md)** for exact Render dashboard settings.
+
 1. Connect GitHub repo, set root to `backend/`
-2. Build command: `npm ci && npm run build` (uses npm, not yarn — `build` runs `prisma generate` + `nest build`)
-3. Start command: `npm run start:prod` (runs `node dist/main.js`)
-4. Set all environment variables in Render (especially `DATABASE_URL`, `CLERK_SECRET_KEY`)
+2. Build command: `chmod +x render-build.sh && ./render-build.sh` (npm only — not `yarn install` alone)
+3. Start command: `npm run start:prod` (not `node dist/src/main`)
+4. Set `NODE_VERSION=20.14.0` and all env vars (`DATABASE_URL`, `CLERK_SECRET_KEY`, etc.)
 5. Run migrations once in Render Shell: `npx prisma db push && npm run db:seed`
 
 ### Database (Neon)

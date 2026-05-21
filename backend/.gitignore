@@ -1,5 +1,14 @@
 node_modules
+dist/
 # Keep environment variables out of version control
 .env
 
 /generated/prisma
+
+# Compiled artifacts (Prisma CLI reads prisma.config.ts only)
+prisma.config.js
+prisma.config.js.map
+prisma.config.d.ts
+prisma/promote-admin.js
+prisma/promote-admin.js.map
+prisma/promote-admin.d.ts
