@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: murgo-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
