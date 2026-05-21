@@ -1,0 +1,19 @@
+---
+description: Push code changes to GitHub after completing work
+alwaysApply: true
+---
+
+# Push updates to GitHub
+
+After making code or config changes the user asked for (or that are part of a completed task):
+
+1. **Commit and push** to the remote `origin` on the current branch (usually `main`), unless the user says not to push.
+2. Use **npm** lockfile workflow for this repo (`package-lock.json`); do not introduce `yarn.lock`.
+3. **Never commit** secrets: `.env`, API keys, credentials.
+4. **Do not commit** build artifacts: `dist/`, `node_modules/`, compiled `prisma.config.js` / `promote-admin.js` unless the user explicitly asks.
+5. Write a clear commit message summarizing **why** the change was made.
+6. If `git` is not on PATH, use `C:\Program Files\Git\bin\git.exe` on Windows.
+7. If git user identity is unset, use one-time `-c user.name=... -c user.email=...` on the commit command (do not run `git config --global` unless the user asks).
+8. Tell the user the **commit hash** and **GitHub repo URL** after a successful push.
+
+If push fails (auth, conflicts, no remote), report the error and what they need to fix; do not skip notifying them.
