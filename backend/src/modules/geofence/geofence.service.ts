@@ -8,7 +8,24 @@ import {
   estimateEtaMinutes,
   SERVICE_AREA_MESSAGE,
   SUPPORTED_CITIES,
+  MURCIA_SERVICE_BOUNDARY,
+  BACOLOD_SERVICE_BOUNDARY,
 } from '../../common/utils/geofence';
+
+const ACTIVE_SERVICE_AREAS = [
+  {
+    name: 'Murcia',
+    boundaryGeo: MURCIA_SERVICE_BOUNDARY,
+    centerLat: 10.604,
+    centerLng: 123.041,
+  },
+  {
+    name: 'Bacolod',
+    boundaryGeo: BACOLOD_SERVICE_BOUNDARY,
+    centerLat: 10.676,
+    centerLng: 122.951,
+  },
+] as const;
 
 @Injectable()
 export class GeofenceService {
@@ -26,15 +43,69 @@ export class GeofenceService {
     return isWithinActiveServiceArea(lat, lng);
   }
 
+  /** Keep DB in sync with geofence.ts so deploys show new cities without a manual seed. */
+  private async syncSupportedCities() {
+    const supportedNames = SUPPORTED_CITIES.map((c) => c.name);
+    await this.prisma.supportedCity.updateMany({
+      where: { name: { notIn: [...supportedNames] } },
+      data: { isActive: false },
+    });
+    for (const city of SUPPORTED_CITIES) {
+      await this.prisma.supportedCity.upsert({
+        where: { name: city.name },
+        create: {
+          name: city.name,
+          latitude: city.lat,
+          longitude: city.lng,
+          isActive: true,
+        },
+        update: {
+          latitude: city.lat,
+          longitude: city.lng,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  private async syncServiceAreas() {
+    const activeNames = ACTIVE_SERVICE_AREAS.map((a) => a.name);
+    await this.prisma.serviceArea.updateMany({
+      where: { name: { notIn: [...activeNames] } },
+      data: { isActive: false },
+    });
+    for (const area of ACTIVE_SERVICE_AREAS) {
+      await this.prisma.serviceArea.upsert({
+        where: { name: area.name },
+        create: {
+          name: area.name,
+          province: 'Negros Occidental',
+          country: 'Philippines',
+          boundaryGeo: area.boundaryGeo as object,
+          centerLat: area.centerLat,
+          centerLng: area.centerLng,
+          isActive: true,
+        },
+        update: {
+          boundaryGeo: area.boundaryGeo as object,
+          centerLat: area.centerLat,
+          centerLng: area.centerLng,
+          isActive: true,
+        },
+      });
+    }
+  }
+
   async getSupportedCities() {
-    const cities = await this.prisma.supportedCity.findMany({
+    await this.syncSupportedCities();
+    return this.prisma.supportedCity.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
     });
-    return cities.length ? cities : SUPPORTED_CITIES;
   }
 
   async getServiceArea() {
+    await this.syncServiceAreas();
     return this.prisma.serviceArea.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
