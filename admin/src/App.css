@@ -284,3 +284,150 @@ button:hover {
   background: var(--secondary);
   margin-top: 16px;
 }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.page-header h2 {
+  margin-bottom: 4px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs button {
+  background: white;
+  color: var(--secondary);
+  border: 1px solid var(--border);
+}
+
+.filter-tabs button.active {
+  background: var(--secondary);
+  color: white;
+  border-color: var(--secondary);
+}
+
+.status-select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  max-width: 160px;
+}
+
+.inline-input {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 100%;
+  min-width: 120px;
+}
+
+.notes-cell {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.btn-muted {
+  background: #6c757d;
+}
+
+.empty-row {
+  text-align: center;
+  color: #6c757d;
+  padding: 24px !important;
+}
+
+.error-banner {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.modal h3 {
+  margin: 0 0 8px;
+  color: var(--secondary);
+}
+
+.modal .hint {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.form-grid input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.form-grid .span-2 {
+  grid-column: span 2;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.inline-edit-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.inline-edit-form input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-width: 140px;
+}
+
+.inline-edit-form .span-2 {
+  flex: 1 1 200px;
+}
+
+.badge-rejected {
+  background: #e2e3e5;
+  color: #383d41;
+}

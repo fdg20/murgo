@@ -26,11 +26,22 @@ export const adminApi = {
     api.get('/admin/merchants', { params: { status } }),
   updateMerchantStatus: (id: string, status: string) =>
     api.patch(`/admin/merchants/${id}/status`, { status }),
+  updateMerchant: (id: string, data: Record<string, unknown>) =>
+    api.patch(`/admin/merchants/${id}`, data),
+  createMerchant: (data: Record<string, unknown>) =>
+    api.post('/admin/merchants', data),
+  deleteMerchant: (id: string) => api.delete(`/admin/merchants/${id}`),
   customers: () => api.get('/admin/customers'),
+  createCustomer: (email: string) => api.post('/admin/customers', { email }),
+  deleteCustomer: (id: string) => api.delete(`/admin/customers/${id}`),
   riders: () => api.get('/admin/riders'),
   suspendUser: (id: string, isActive: boolean) =>
     api.patch(`/admin/users/${id}/suspend`, { isActive }),
   orders: () => api.get('/admin/orders'),
+  updateOrderStatus: (id: string, status: string) =>
+    api.patch(`/admin/orders/${id}/status`, { status }),
+  updateOrder: (id: string, data: { notes?: string }) =>
+    api.patch(`/admin/orders/${id}`, data),
   deliveryFees: () => api.get('/admin/delivery-fees'),
   updateDeliveryFee: (id: string, data: Record<string, unknown>) =>
     api.patch(`/admin/delivery-fees/${id}`, data),

@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -10,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { ClerkAuthGuard, Roles } from '../../common/guards/clerk-auth.guard';
-import { MerchantStatus, UserRole } from '@prisma/client';
+import { MerchantStatus, OrderStatus, UserRole } from '@prisma/client';
 
 @Controller('admin')
 @UseGuards(ClerkAuthGuard)
@@ -36,9 +37,57 @@ export class AdminController {
     return this.adminService.updateMerchantStatus(id, body.status);
   }
 
+  @Patch('merchants/:id')
+  updateMerchant(
+    @Param('id') id: string,
+    @Body()
+    body: Partial<{
+      businessName: string;
+      phone: string;
+      email: string;
+      address: string;
+      city: string;
+      description: string;
+    }>,
+  ) {
+    return this.adminService.updateMerchant(id, body);
+  }
+
+  @Post('merchants')
+  createMerchant(
+    @Body()
+    body: {
+      email: string;
+      businessName: string;
+      phone: string;
+      address: string;
+      city: string;
+      latitude: number;
+      longitude: number;
+      description?: string;
+    },
+  ) {
+    return this.adminService.createMerchant(body);
+  }
+
+  @Delete('merchants/:id')
+  removeMerchant(@Param('id') id: string) {
+    return this.adminService.removeMerchant(id);
+  }
+
   @Get('customers')
   getCustomers() {
     return this.adminService.getCustomers();
+  }
+
+  @Post('customers')
+  createCustomer(@Body() body: { email: string }) {
+    return this.adminService.createCustomer(body.email);
+  }
+
+  @Delete('customers/:id')
+  removeCustomer(@Param('id') id: string) {
+    return this.adminService.removeCustomer(id);
   }
 
   @Get('riders')
@@ -93,5 +142,21 @@ export class AdminController {
   @Get('orders')
   getOrders() {
     return this.adminService.getAllOrders();
+  }
+
+  @Patch('orders/:id/status')
+  updateOrderStatus(
+    @Param('id') id: string,
+    @Body() body: { status: OrderStatus },
+  ) {
+    return this.adminService.updateOrderStatus(id, body.status);
+  }
+
+  @Patch('orders/:id')
+  updateOrder(
+    @Param('id') id: string,
+    @Body() body: { notes?: string },
+  ) {
+    return this.adminService.updateOrder(id, body);
   }
 }
