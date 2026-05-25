@@ -261,10 +261,14 @@ See **[mobile/TESTING-ORDERS.md](mobile/TESTING-ORDERS.md)** for the full Custom
 
 ### Admin (Vercel / Netlify)
 
+See **[admin/DEPLOY.md](admin/DEPLOY.md)** for step-by-step Vercel setup.
+
 1. Root directory: `admin/`
 2. Build: `npm run build`
 3. Output: `dist/`
-4. Set `VITE_API_URL` and `VITE_CLERK_PUBLISHABLE_KEY`
+4. Set `VITE_API_URL=https://YOUR-SERVICE.onrender.com/api` and `VITE_CLERK_PUBLISHABLE_KEY`
+5. Add the Vercel URL to Render `CORS_ORIGIN` and Clerk allowed domains
+6. Set `EXPO_PUBLIC_ADMIN_URL=https://your-admin.vercel.app` in `mobile/.env` so the app does not show `localhost:5173`
 
 ## Project Structure
 
