@@ -7,7 +7,8 @@ import { createClerkClient } from '@clerk/backend';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MerchantsService } from '../merchants/merchants.service';
 import { GeofenceService } from '../geofence/geofence.service';
-import { MerchantStatus, OrderStatus, UserRole } from '@prisma/client';
+import { LiveGateway } from '../websocket/live.gateway';
+import { MerchantStatus, OrderStatus, RiderStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -19,6 +20,7 @@ export class AdminService {
     private prisma: PrismaService,
     private merchantsService: MerchantsService,
     private geofence: GeofenceService,
+    private liveGateway: LiveGateway,
   ) {}
 
   async getDashboard() {
@@ -136,6 +138,7 @@ export class AdminService {
       include: {
         customer: { include: { user: true } },
         merchant: true,
+        address: true,
         rider: { include: { user: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -146,15 +149,27 @@ export class AdminService {
   async updateOrderStatus(id: string, status: OrderStatus) {
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
-    return this.prisma.order.update({
+
+    const updated = await this.prisma.order.update({
       where: { id },
       data: { status },
       include: {
         customer: { include: { user: true } },
         merchant: true,
+        address: true,
         rider: { include: { user: true } },
       },
     });
+
+    this.liveGateway.emitOrderUpdate(id, status);
+    if (updated.customer?.userId) {
+      this.liveGateway.emitToUser(updated.customer.userId, 'order:status', {
+        orderId: id,
+        status,
+      });
+    }
+
+    return updated;
   }
 
   async updateOrder(id: string, data: { notes?: string }) {
@@ -166,9 +181,131 @@ export class AdminService {
       include: {
         customer: { include: { user: true } },
         merchant: true,
+        address: true,
         rider: { include: { user: true } },
       },
     });
+  }
+
+  async assignRiderToOrder(orderId: string, riderId: string) {
+    const [order, rider] = await Promise.all([
+      this.prisma.order.findUnique({
+        where: { id: orderId },
+        include: { customer: true, merchant: true },
+      }),
+      this.prisma.rider.findUnique({
+        where: { id: riderId },
+        include: { user: true },
+      }),
+    ]);
+
+    if (!order) throw new NotFoundException('Order not found');
+    if (!rider) throw new NotFoundException('Rider not found');
+    if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.DELIVERED) {
+      throw new BadRequestException('Cannot assign rider to a closed order');
+    }
+
+    const nextStatus =
+      order.status === OrderStatus.PENDING ||
+      order.status === OrderStatus.CONFIRMED ||
+      order.status === OrderStatus.PREPARING ||
+      order.status === OrderStatus.READY_FOR_PICKUP
+        ? OrderStatus.RIDER_ASSIGNED
+        : order.status;
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.order.update({
+        where: { id: orderId },
+        data: { riderId, status: nextStatus },
+        include: {
+          customer: { include: { user: true } },
+          merchant: true,
+          address: true,
+          rider: { include: { user: true } },
+        },
+      }),
+      this.prisma.rider.update({
+        where: { id: riderId },
+        data: { status: RiderStatus.BUSY },
+      }),
+    ]);
+
+    this.liveGateway.emitOrderUpdate(orderId, nextStatus, { riderId });
+    if (order.customer?.userId) {
+      this.liveGateway.emitToUser(order.customer.userId, 'order:status', {
+        orderId,
+        status: nextStatus,
+      });
+    }
+
+    return updated;
+  }
+
+  /** Testing only — push a GPS ping so customers see the rider on the map. */
+  async simulateRiderLocation(
+    orderId: string,
+    preset: 'merchant' | 'customer' | 'midpoint',
+  ) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { merchant: true, address: true, rider: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (!order.riderId) {
+      throw new BadRequestException('Assign a rider to this order first');
+    }
+
+    let latitude: number;
+    let longitude: number;
+
+    if (preset === 'merchant') {
+      latitude = order.merchant.latitude;
+      longitude = order.merchant.longitude;
+    } else if (preset === 'customer') {
+      latitude = order.address.latitude;
+      longitude = order.address.longitude;
+    } else {
+      latitude = (order.merchant.latitude + order.address.latitude) / 2;
+      longitude = (order.merchant.longitude + order.address.longitude) / 2;
+    }
+
+    await this.prisma.rider.update({
+      where: { id: order.riderId },
+      data: { currentLat: latitude, currentLng: longitude },
+    });
+
+    await this.prisma.trackingLocation.create({
+      data: {
+        orderId,
+        riderId: order.riderId,
+        latitude,
+        longitude,
+      },
+    });
+
+    const payload = {
+      orderId,
+      latitude,
+      longitude,
+      timestamp: new Date().toISOString(),
+    };
+
+    this.liveGateway.emitRiderLocation(orderId, latitude, longitude);
+
+    let status = order.status;
+    if (
+      status === OrderStatus.RIDER_ASSIGNED ||
+      status === OrderStatus.PICKED_UP
+    ) {
+      status = OrderStatus.IN_TRANSIT;
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: { status },
+      });
+      this.liveGateway.emitOrderUpdate(orderId, status);
+    }
+
+    return { ...payload, status };
   }
 
   async updateMerchant(

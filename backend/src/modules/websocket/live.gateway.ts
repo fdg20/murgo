@@ -116,6 +116,17 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  emitRiderLocation(orderId: string, latitude: number, longitude: number) {
+    const payload = {
+      orderId,
+      latitude,
+      longitude,
+      timestamp: new Date().toISOString(),
+    };
+    this.server.to(`order:${orderId}`).emit('rider:location', payload);
+    return payload;
+  }
+
   emitToUser(userId: string, event: string, data: unknown) {
     this.server.to(`user:${userId}`).emit(event, data);
   }

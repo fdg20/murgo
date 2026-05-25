@@ -8,7 +8,7 @@ export const connectSocket = (token: string): Socket => {
 
   socket = io(`${SOCKET_URL}/live`, {
     auth: { token },
-    transports: ['websocket'],
+    transports: ['websocket', 'polling'],
   });
 
   return socket;

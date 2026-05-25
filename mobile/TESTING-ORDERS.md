@@ -79,4 +79,11 @@ After `db:seed`, merchants exist but Clerk users must be created by you. Easiest
 2. Second device or emulator — **Merchant** (register store in app, approve via admin, or use admin panel).
 3. Third — **Rider** (separate Clerk sign-up, select Rider role).
 
-For a solo dev test, use the **admin panel** to approve merchants and advance order status if you only have one phone.
+For a solo dev test, use the **admin panel** to approve merchants, change order status, **assign a test rider**, and tap **GPS @ store / en route / @ customer** to simulate live tracking on one phone.
+
+### Admin test rider flow (one phone)
+
+1. Create a second Clerk account (or use an existing user) and choose **Rider** in the app once.
+2. In admin → **Orders**, pick that rider from the dropdown and click **Assign**.
+3. Set status to **IN_TRANSIT** (or use **GPS en route** — it auto-sets IN_TRANSIT).
+4. On your customer phone, open the order → map should show the rider pin moving when you tap the GPS buttons in admin.

@@ -152,6 +152,22 @@ export class AdminController {
     return this.adminService.updateOrderStatus(id, body.status);
   }
 
+  @Patch('orders/:id/rider')
+  assignRider(
+    @Param('id') id: string,
+    @Body() body: { riderId: string },
+  ) {
+    return this.adminService.assignRiderToOrder(id, body.riderId);
+  }
+
+  @Post('orders/:id/simulate-location')
+  simulateRiderLocation(
+    @Param('id') id: string,
+    @Body() body: { preset: 'merchant' | 'customer' | 'midpoint' },
+  ) {
+    return this.adminService.simulateRiderLocation(id, body.preset);
+  }
+
   @Patch('orders/:id')
   updateOrder(
     @Param('id') id: string,

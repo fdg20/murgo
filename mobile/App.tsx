@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
-import { API_URL, CLERK_PUBLISHABLE_KEY } from './src/constants/config';
+import { API_URL, SOCKET_URL, CLERK_PUBLISHABLE_KEY } from './src/constants/config';
 import { getFreshAuthToken, setAuthToken } from './src/api/client';
 import { connectSocket, disconnectSocket } from './src/api/socket';
 import { useApiAuth } from './src/hooks/useApiAuth';
@@ -95,11 +95,19 @@ function AppRoot() {
         /https?:\/\/192\.168\.|https?:\/\/10\.|https?:\/\/172\.(1[6-9]|2\d|3[01])\./.test(
           API_URL,
         );
+      const isLocalSocket =
+        SOCKET_URL.includes('localhost') ||
+        SOCKET_URL.includes('127.0.0.1') ||
+        /https?:\/\/192\.168\.|https?:\/\/10\.|https?:\/\/172\.(1[6-9]|2\d|3[01])\./.test(
+          SOCKET_URL,
+        );
       setBootError(
         message.includes('timed out') || message.includes('Network')
           ? isLocalApi
-            ? `Cannot reach API at ${API_URL}. For local dev: same Wi‑Fi as your PC, backend running, and EXPO_PUBLIC_API_URL set to your PC IP. For live Render: use https://YOUR-SERVICE.onrender.com/api in mobile/.env, redeploy API, then restart Expo.`
-            : `Cannot reach API at ${API_URL}. Check Render is awake (open the URL in a browser), DATABASE_URL on Render, and mobile/.env uses https (not http). First request after sleep can take ~30s.`
+            ? `Cannot reach API at ${API_URL}. For local dev: same Wi‑Fi as your PC, backend running, and EXPO_PUBLIC_API_URL set to your PC IP. For live Render: use https://murgo-api.onrender.com/api in mobile/.env, redeploy API, then restart Expo with: npx expo start --tunnel -c`
+            : isLocalSocket
+              ? `Live tracking uses ${SOCKET_URL} but your API is on Render. Set EXPO_PUBLIC_SOCKET_URL=https://murgo-api.onrender.com in mobile/.env (same host as API, no /api), then restart Expo with: npx expo start --tunnel -c`
+              : `Cannot reach API at ${API_URL}. Check Render is awake (open the URL in a browser), DATABASE_URL on Render, and mobile/.env uses https (not http). First request after sleep can take ~30s.`
           : message,
       );
       setNeedsRoleSelect(true);

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { setAuthToken } from '../api/client';
+import { setAuthToken, setTokenGetter } from '../api/client';
 
 export function useApiAuth() {
   const { getToken, isSignedIn } = useAuth();
@@ -8,8 +8,11 @@ export function useApiAuth() {
   useEffect(() => {
     if (!isSignedIn) {
       setAuthToken(null);
+      setTokenGetter(null);
       return;
     }
-    getToken().then((token) => setAuthToken(token));
+
+    setTokenGetter(() => getToken());
+    getToken().then((token) => setAuthToken(token ?? null));
   }, [getToken, isSignedIn]);
 }

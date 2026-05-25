@@ -21,8 +21,19 @@ type Order = {
   status: string;
   total: number;
   notes?: string | null;
+  riderId?: string | null;
   customer: { user: { firstName?: string; lastName?: string } };
   merchant: { businessName: string };
+  rider?: {
+    id: string;
+    user: { firstName?: string; lastName?: string };
+  } | null;
+};
+
+type Rider = {
+  id: string;
+  user: { firstName?: string; lastName?: string; email: string };
+  status: string;
 };
 
 export function OrdersPage() {
@@ -30,36 +41,111 @@ export function OrdersPage() {
   const queryClient = useQueryClient();
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState('');
+  const [riderPick, setRiderPick] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, isError, error: loadError } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => (await adminApi.orders()).data as Order[],
   });
 
+  const { data: riders } = useQuery({
+    queryKey: ['admin-riders'],
+    queryFn: async () => (await adminApi.riders()).data as Rider[],
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+
+  const showError = (err: unknown) => {
+    setSuccess(null);
+    setError(err instanceof Error ? err.message : 'Something went wrong');
+  };
+
+  const showSuccess = (msg: string) => {
+    setError(null);
+    setSuccess(msg);
+    setTimeout(() => setSuccess(null), 4000);
+  };
+
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       adminApi.updateOrderStatus(id, status),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] }),
+    onSuccess: () => {
+      invalidate();
+      showSuccess('Order status updated');
+    },
+    onError: showError,
   });
 
   const updateNotes = useMutation({
     mutationFn: ({ id, notes }: { id: string; notes: string }) =>
       adminApi.updateOrder(id, { notes }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      invalidate();
       setEditingNotes(null);
+      showSuccess('Notes saved');
     },
+    onError: showError,
+  });
+
+  const assignRider = useMutation({
+    mutationFn: ({ orderId, riderId }: { orderId: string; riderId: string }) =>
+      adminApi.assignRider(orderId, riderId),
+    onSuccess: () => {
+      invalidate();
+      showSuccess('Rider assigned — customer can track on the map');
+    },
+    onError: showError,
+  });
+
+  const simulateLocation = useMutation({
+    mutationFn: ({
+      orderId,
+      preset,
+    }: {
+      orderId: string;
+      preset: 'merchant' | 'customer' | 'midpoint';
+    }) => adminApi.simulateRiderLocation(orderId, preset),
+    onSuccess: () => {
+      invalidate();
+      showSuccess('Test GPS ping sent to customer app');
+    },
+    onError: showError,
   });
 
   if (isLoading) return <p>Loading orders...</p>;
+
+  if (isError) {
+    return (
+      <div>
+        <h2>Orders</h2>
+        <p className="error-banner">
+          {loadError instanceof Error
+            ? loadError.message
+            : 'Could not load orders'}
+        </p>
+        <p className="hint">
+          If you use the Vercel admin panel, set{' '}
+          <code>VITE_API_URL=https://murgo-api.onrender.com/api</code> in Vercel
+          env vars and redeploy Render after pulling latest code.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <h2>Orders</h2>
       <p className="subtitle">
-        Approve, update status, add notes, or cancel orders
+        Update status, assign a rider for testing, and send GPS pings for live
+        tracking on the customer app
       </p>
+
+      {error && <p className="error-banner">{error}</p>}
+      {success && <p className="success-banner">{success}</p>}
+
       <table className="data-table">
         <thead>
           <tr>
@@ -67,6 +153,7 @@ export function OrdersPage() {
             <th>Customer</th>
             <th>Merchant</th>
             <th>Status</th>
+            <th>Rider</th>
             <th>Total</th>
             <th>Notes</th>
             <th>Actions</th>
@@ -75,7 +162,7 @@ export function OrdersPage() {
         <tbody>
           {orders?.length === 0 && (
             <tr>
-              <td colSpan={7} className="empty-row">
+              <td colSpan={8} className="empty-row">
                 No orders yet
               </td>
             </tr>
@@ -91,6 +178,7 @@ export function OrdersPage() {
                 <select
                   className="status-select"
                   value={o.status}
+                  disabled={updateStatus.isPending}
                   onChange={(e) =>
                     updateStatus.mutate({ id: o.id, status: e.target.value })
                   }
@@ -101,6 +189,42 @@ export function OrdersPage() {
                     </option>
                   ))}
                 </select>
+              </td>
+              <td>
+                {o.rider ? (
+                  <span className="rider-name">
+                    {o.rider.user.firstName} {o.rider.user.lastName}
+                  </span>
+                ) : (
+                  <div className="rider-assign">
+                    <select
+                      className="status-select"
+                      value={riderPick[o.id] ?? ''}
+                      onChange={(e) =>
+                        setRiderPick((p) => ({ ...p, [o.id]: e.target.value }))
+                      }
+                    >
+                      <option value="">Select rider…</option>
+                      {riders?.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.user.firstName} {r.user.lastName} ({r.status})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      className="btn-small"
+                      disabled={!riderPick[o.id] || assignRider.isPending}
+                      onClick={() =>
+                        assignRider.mutate({
+                          orderId: o.id,
+                          riderId: riderPick[o.id],
+                        })
+                      }
+                    >
+                      Assign
+                    </button>
+                  </div>
+                )}
               </td>
               <td>₱{o.total.toFixed(2)}</td>
               <td>
@@ -171,6 +295,46 @@ export function OrdersPage() {
                           }
                         >
                           Reject
+                        </button>
+                      </>
+                    )}
+                    {o.rider && o.status !== 'DELIVERED' && o.status !== 'CANCELLED' && (
+                      <>
+                        <button
+                          className="btn-muted btn-small"
+                          disabled={simulateLocation.isPending}
+                          onClick={() =>
+                            simulateLocation.mutate({
+                              orderId: o.id,
+                              preset: 'merchant',
+                            })
+                          }
+                        >
+                          GPS @ store
+                        </button>
+                        <button
+                          className="btn-muted btn-small"
+                          disabled={simulateLocation.isPending}
+                          onClick={() =>
+                            simulateLocation.mutate({
+                              orderId: o.id,
+                              preset: 'midpoint',
+                            })
+                          }
+                        >
+                          GPS en route
+                        </button>
+                        <button
+                          className="btn-muted btn-small"
+                          disabled={simulateLocation.isPending}
+                          onClick={() =>
+                            simulateLocation.mutate({
+                              orderId: o.id,
+                              preset: 'customer',
+                            })
+                          }
+                        >
+                          GPS @ customer
                         </button>
                       </>
                     )}
