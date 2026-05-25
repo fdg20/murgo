@@ -348,7 +348,7 @@ export function AuthScreen({ onAuthenticated }: Props) {
         />
         <Text className="text-white text-3xl font-bold mb-2">MurGo</Text>
         <Text className="text-gray-300 text-base mb-10">
-          Food delivery in Murcia, Negros Occidental
+          Food delivery in Murcia and Bacolod, Negros Occidental
         </Text>
 
         <View className="bg-white rounded-2xl p-6 shadow-lg">
@@ -478,7 +478,7 @@ export function AuthScreen({ onAuthenticated }: Props) {
         </View>
 
         <Text className="text-gray-400 text-center text-xs mt-8">
-          Service available only within Murcia, Negros Occidental
+          Service available in Murcia and Bacolod City, Negros Occidental
         </Text>
       </View>
     </ScrollView>

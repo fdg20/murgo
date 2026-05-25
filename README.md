@@ -1,6 +1,6 @@
 # MurGo
 
-Production-ready multi-vendor food delivery platform (**MurGo**) operating **exclusively within Murcia, Negros Occidental, Philippines**.
+Production-ready multi-vendor food delivery platform (**MurGo**) operating within **Murcia** and **Bacolod City**, Negros Occidental, Philippines.
 
 Similar to Grab, Uber Eats, and Foodpanda — with geofencing enforced at every layer: addresses, merchant registration, rider deliveries, and customer orders.
 
@@ -36,11 +36,11 @@ negros-delivery/
 
 ## Service Area Restriction
 
-All location operations are validated against a **Murcia municipality** boundary polygon stored in the database. Users outside Murcia see:
+All location operations are validated against **Murcia** and **Bacolod City** boundary polygons stored in the database. Users outside these areas see:
 
-> Sorry, MurGo is currently available only within Murcia, Negros Occidental.
+> Sorry, MurGo is currently available only within Murcia and Bacolod City, Negros Occidental.
 
-Supported areas include Murcia (Poblacion), Blumentritt, Minoyan, Cansilayan, Damsite, San Miguel, Lopez Jaena, Caliban, and other barangays within Murcia.
+Supported areas include Murcia barangays (Poblacion, Blumentritt, Minoyan, etc.) and Bacolod areas (Downtown, Lacson, Mandalagan, Burgos, Villamonte, and more).
 
 ## Prerequisites
 
@@ -205,13 +205,13 @@ Checkout breakdown: **Subtotal → Discount → Delivery Fee → Total**
 
 The seed script creates:
 
-- Murcia municipality service area boundary
-- 18 supported cities
+- Murcia and Bacolod service area boundaries
+- Supported cities in both areas (including Bacolod Downtown, Lacson, Mandalagan)
 - Default delivery fee & commission config
 - Promo codes: `MURGO50`, `MURCIA20`
 - Demo merchant: **Chicken House Bacolod** (Bacolod City)
 - Demo merchant: **Silay Pastries & Cafe** (Silay City)
-- Sample products with Murcia-area pricing (₱)
+- Sample merchants in Murcia and Bacolod with sample products (₱)
 
 ## Deployment
 

@@ -10,7 +10,7 @@ export const SIGNUP_ROLES: {
   {
     role: 'CUSTOMER',
     title: 'Customer',
-    description: 'Order food from local merchants in Murcia',
+    description: 'Order food from local merchants in Murcia & Bacolod',
   },
   {
     role: 'MERCHANT',
@@ -20,6 +20,6 @@ export const SIGNUP_ROLES: {
   {
     role: 'RIDER',
     title: 'Rider',
-    description: 'Deliver orders and earn within Murcia',
+    description: 'Deliver orders and earn in Murcia & Bacolod',
   },
 ];

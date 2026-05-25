@@ -4,18 +4,21 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import {
   MURCIA_SERVICE_BOUNDARY,
+  BACOLOD_SERVICE_BOUNDARY,
   SUPPORTED_CITIES,
 } from '../src/common/utils/geofence';
+
+const ACTIVE_SERVICE_AREA_NAMES = ['Murcia', 'Bacolod'] as const;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('Seeding MurGo (Murcia service area) delivery data...');
+  console.log('Seeding MurGo (Murcia + Bacolod service areas)...');
 
   await prisma.serviceArea.updateMany({
-    where: { name: { not: 'Murcia' } },
+    where: { name: { notIn: [...ACTIVE_SERVICE_AREA_NAMES] } },
     data: { isActive: false },
   });
 
@@ -34,6 +37,25 @@ async function main() {
       boundaryGeo: MURCIA_SERVICE_BOUNDARY as object,
       centerLat: 10.604,
       centerLng: 123.041,
+      isActive: true,
+    },
+  });
+
+  await prisma.serviceArea.upsert({
+    where: { name: 'Bacolod' },
+    create: {
+      name: 'Bacolod',
+      province: 'Negros Occidental',
+      country: 'Philippines',
+      boundaryGeo: BACOLOD_SERVICE_BOUNDARY as object,
+      centerLat: 10.676,
+      centerLng: 122.951,
+      isActive: true,
+    },
+    update: {
+      boundaryGeo: BACOLOD_SERVICE_BOUNDARY as object,
+      centerLat: 10.676,
+      centerLng: 122.951,
       isActive: true,
     },
   });
@@ -279,6 +301,116 @@ async function main() {
     }
   }
 
+  const bacolodMerchantUser = await prisma.user.upsert({
+    where: { email: 'bacolod@negrosdelivery.ph' },
+    create: {
+      clerkId: 'seed_merchant_bacolod_clerk_id',
+      email: 'bacolod@negrosdelivery.ph',
+      firstName: 'Rosa',
+      lastName: 'Lim',
+      role: 'MERCHANT',
+      phone: '+639221234567',
+    },
+    update: {},
+  });
+
+  const bacolodMerchant = await prisma.merchant.upsert({
+    where: { userId: bacolodMerchantUser.id },
+    create: {
+      userId: bacolodMerchantUser.id,
+      businessName: 'Bacolod Chicken Inasal',
+      description: 'Authentic chicken inasal and rice meals in Bacolod',
+      phone: '+639221234567',
+      email: 'bacolod@negrosdelivery.ph',
+      address: 'Lacson Street, Bacolod City',
+      city: 'Bacolod (Downtown)',
+      latitude: 10.676,
+      longitude: 122.951,
+      status: 'APPROVED',
+      isOpen: true,
+      openingTime: '09:00',
+      closingTime: '21:00',
+    },
+    update: {
+      status: 'APPROVED',
+      isOpen: true,
+      businessName: 'Bacolod Chicken Inasal',
+      address: 'Lacson Street, Bacolod City',
+      city: 'Bacolod (Downtown)',
+      latitude: 10.676,
+      longitude: 122.951,
+    },
+  });
+
+  const bacolodProducts = [
+    { name: 'Chicken Inasal Solo', price: 139, stock: 40 },
+    { name: 'Inasal + Garlic Rice', price: 159, stock: 35 },
+    { name: 'Batchoy', price: 95, stock: 30 },
+    { name: 'Calamansi Juice', price: 40, stock: 80 },
+  ];
+
+  for (const p of bacolodProducts) {
+    const existing = await prisma.product.findFirst({
+      where: { merchantId: bacolodMerchant.id, name: p.name },
+    });
+    if (!existing) {
+      await prisma.product.create({ data: { merchantId: bacolodMerchant.id, ...p } });
+    }
+  }
+
+  const bacolodMerchant2User = await prisma.user.upsert({
+    where: { email: 'bacolod2@negrosdelivery.ph' },
+    create: {
+      clerkId: 'seed_merchant_bacolod2_clerk_id',
+      email: 'bacolod2@negrosdelivery.ph',
+      firstName: 'Carlo',
+      lastName: 'Villanueva',
+      role: 'MERCHANT',
+    },
+    update: {},
+  });
+
+  const bacolodMerchant2 = await prisma.merchant.upsert({
+    where: { userId: bacolodMerchant2User.id },
+    create: {
+      userId: bacolodMerchant2User.id,
+      businessName: 'Mandalagan Food Hub',
+      description: 'Filipino comfort food and merienda in Mandalagan',
+      phone: '+639231234567',
+      email: 'bacolod2@negrosdelivery.ph',
+      address: 'Mandalagan, Bacolod City',
+      city: 'Mandalagan',
+      latitude: 10.695,
+      longitude: 122.97,
+      status: 'APPROVED',
+      isOpen: true,
+    },
+    update: {
+      status: 'APPROVED',
+      isOpen: true,
+      city: 'Mandalagan',
+      latitude: 10.695,
+      longitude: 122.97,
+    },
+  });
+
+  const mandalaganProducts = [
+    { name: 'Sizzling Sisig', price: 125, stock: 25 },
+    { name: 'Pancit Molo', price: 110, stock: 20 },
+    { name: 'Halo-Halo', price: 75, stock: 40 },
+  ];
+
+  for (const p of mandalaganProducts) {
+    const existing = await prisma.product.findFirst({
+      where: { merchantId: bacolodMerchant2.id, name: p.name },
+    });
+    if (!existing) {
+      await prisma.product.create({
+        data: { merchantId: bacolodMerchant2.id, ...p },
+      });
+    }
+  }
+
   const riderUser = await prisma.user.upsert({
     where: { email: 'rider@negrosdelivery.ph' },
     create: {
@@ -343,6 +475,7 @@ async function main() {
   console.log('Seed completed successfully!');
   console.log(`Admin: ${adminUser.email}`);
   console.log(`Merchant: ${merchant.businessName}`);
+  console.log(`Bacolod merchants: ${bacolodMerchant.businessName}, ${bacolodMerchant2.businessName}`);
   console.log(`Customer: ${customerUser.email}`);
 }
 

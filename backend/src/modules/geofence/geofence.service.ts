@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   validateServiceArea,
-  isWithinMurciaServiceArea,
+  isWithinActiveServiceArea,
   calculateDistanceKm,
   calculateDeliveryFee,
   estimateEtaMinutes,
@@ -23,7 +23,7 @@ export class GeofenceService {
   }
 
   isWithinServiceArea(lat: number, lng: number): boolean {
-    return isWithinMurciaServiceArea(lat, lng);
+    return isWithinActiveServiceArea(lat, lng);
   }
 
   async getSupportedCities() {
@@ -35,8 +35,9 @@ export class GeofenceService {
   }
 
   async getServiceArea() {
-    return this.prisma.serviceArea.findFirst({
-      where: { isActive: true, name: 'Murcia' },
+    return this.prisma.serviceArea.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
     });
   }
 

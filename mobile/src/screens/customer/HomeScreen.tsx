@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { merchantsApi } from '../../api/services';
+import { geofenceApi, merchantsApi } from '../../api/services';
 import { useLocationStore } from '../../store';
 import { getLocationWithValidation } from '../../utils/location';
 import { ServiceAreaBanner } from '../../components/ServiceAreaBanner';
@@ -34,6 +34,18 @@ export function HomeScreen({ onMerchantPress }: Props) {
       }
     })();
   }, []);
+
+  const { data: cities = [] } = useQuery({
+    queryKey: ['cities'],
+    queryFn: async () => {
+      const res = await geofenceApi.getCities();
+      const rows = res.data as { name: string }[];
+      return rows.map((c) => c.name);
+    },
+    initialData: SUPPORTED_CITIES,
+  });
+
+  const cityFilters = cities.length ? cities : SUPPORTED_CITIES;
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['merchants', selectedCity, search],
@@ -92,7 +104,7 @@ export function HomeScreen({ onMerchantPress }: Props) {
           MurGo
         </Text>
         <Text className="text-gray-500 text-sm mb-4">
-          Delivering in Murcia
+          Delivering in Murcia and Bacolod
         </Text>
 
         <TextInput
@@ -105,7 +117,7 @@ export function HomeScreen({ onMerchantPress }: Props) {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={['All', ...SUPPORTED_CITIES.slice(0, 6)]}
+          data={['All', ...cityFilters.slice(0, 10)]}
           keyExtractor={(item) => item}
           renderItem={({ item }) => (
             <TouchableOpacity

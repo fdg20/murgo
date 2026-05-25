@@ -12,15 +12,15 @@ export const ADMIN_PANEL_URL =
   process.env.EXPO_PUBLIC_ADMIN_URL ?? 'http://localhost:5173';
 
 export const SERVICE_AREA_MESSAGE =
-  'Sorry, MurGo is currently available only within Murcia, Negros Occidental.';
+  'Sorry, MurGo is currently available only within Murcia and Bacolod City, Negros Occidental.';
 
+/** Fallback when /geofence/cities is unavailable */
 export const SUPPORTED_CITIES = [
   'Murcia (Poblacion)',
   'Blumentritt',
-  'Minoyan',
-  'Cansilayan',
-  'Damsite',
-  'San Miguel',
-  'Lopez Jaena',
-  'Caliban',
+  'Bacolod (Downtown)',
+  'Lacson',
+  'Mandalagan',
+  'Burgos',
+  'Villamonte',
 ];

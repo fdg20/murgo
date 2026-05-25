@@ -47,7 +47,7 @@ export function MerchantRegisterScreen({ onRegistered }: Props) {
     if (!result.valid || !result.coords) {
       Alert.alert(
         'Outside Service Area',
-        result.message ?? 'Business must be located in Murcia',
+        result.message ?? 'Business must be in Murcia or Bacolod City',
       );
       return;
     }
@@ -64,7 +64,7 @@ export function MerchantRegisterScreen({ onRegistered }: Props) {
         Register Your Business
       </Text>
       <Text className="text-gray-500 mb-6">
-        Business location must be within Murcia
+        Business location must be within Murcia or Bacolod City
       </Text>
 
       {(

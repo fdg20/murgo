@@ -97,7 +97,7 @@ export function ProfileScreen() {
               value={addressForm.barangay}
               onChangeText={(v) => setAddressForm((f) => ({ ...f, barangay: v }))}
             />
-            <Text className="text-gray-500 text-sm mb-1">Barangay / area (Murcia only)</Text>
+            <Text className="text-gray-500 text-sm mb-1">Barangay / area (Murcia or Bacolod)</Text>
             <ScrollView horizontal className="mb-3">
               {SUPPORTED_CITIES.slice(0, 8).map((city) => (
                 <TouchableOpacity
@@ -138,7 +138,7 @@ export function ProfileScreen() {
           <View key={addr.id} className="bg-white rounded-xl p-4 mb-2">
             <Text className="text-secondary font-medium">{addr.label}</Text>
             <Text className="text-gray-500 text-sm">
-              {addr.street}, {addr.city}, Murcia
+              {addr.street}, {addr.city}
             </Text>
             {addr.isDefault && (
               <Text className="text-primary text-xs mt-1">Default</Text>
