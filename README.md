@@ -139,19 +139,30 @@ cd admin && npm run dev
 - Admin: http://localhost:5173
 - Mobile: Scan QR with Expo Go
 
-### Expo Go on a physical phone (fixes endless loading)
+### Phone testing: live API (Render) vs local dev
 
-1. **Same Wi‑Fi** as your PC (not mobile data only).
-2. Set `mobile/.env` to your PC **LAN IP** (from `ipconfig`), not `localhost`:
-   - `EXPO_PUBLIC_API_URL=http://192.168.x.x:3000/api`
-   - `EXPO_PUBLIC_SOCKET_URL=http://192.168.x.x:3000`
-3. **Backend must be running** before you open the app (`npm run start:dev` in `backend/`).
-4. If the QR bundle never finishes loading, use **tunnel mode** (works across networks / strict firewalls):
-   ```bash
-   cd mobile && npm run start:tunnel
-   ```
+| What | Needs same Wi‑Fi as PC? | Needs PC running? |
+|------|-------------------------|-------------------|
+| **API on Render** (`https://…onrender.com`) | No — phone can use mobile data | No — API is in the cloud |
+| **Expo Go app UI** (Metro bundler) | Only if using `npm start` (LAN). Use `npm run start:tunnel` to avoid same Wi‑Fi | **Yes** — Expo Go loads JS from your PC |
+| **Installed app (EAS build)** | No | **No** — real install, no Expo Go |
+
+**Using live Render from your phone (Expo Go):**
+
+1. Set `mobile/.env` to your Render URLs (see `mobile/.env.example`).
+2. On PC: `cd mobile && npm run start:tunnel` (tunnel works even if phone is on mobile data).
+3. Scan QR in Expo Go. You do **not** need local backend or same Wi‑Fi for API calls.
+4. Be in **Murcia or Bacolod** (or geofence will block ordering).
+
+**No PC at all:** build with [Expo EAS](https://expo.dev/eas) (`eas build`) and install the APK/IPA — see Mobile (Expo EAS) below.
+
+### Expo Go on a physical phone (local backend only)
+
+1. **Same Wi‑Fi** as your PC (not mobile data only), unless using tunnel.
+2. Set `mobile/.env` to your PC **LAN IP** (from `ipconfig`), not `localhost`.
+3. **Backend must be running** (`npm run start:dev` in `backend/`).
+4. If the QR bundle never finishes loading: `cd mobile && npm run start:tunnel`
 5. Clear cache if stuck: `npm run start:clear`
-6. Allow **Node.js** through Windows Firewall (private network) for ports **8081** (Metro) and **3000** (API).
 
 ## Free hosting (production)
 

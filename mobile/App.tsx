@@ -89,9 +89,17 @@ function AppRoot() {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not load profile';
+      const isLocalApi =
+        API_URL.includes('localhost') ||
+        API_URL.includes('127.0.0.1') ||
+        /https?:\/\/192\.168\.|https?:\/\/10\.|https?:\/\/172\.(1[6-9]|2\d|3[01])\./.test(
+          API_URL,
+        );
       setBootError(
         message.includes('timed out') || message.includes('Network')
-          ? `Cannot reach API at ${API_URL}. Use the same Wi‑Fi as your PC, start the backend, and set EXPO_PUBLIC_API_URL to your PC IP in mobile/.env`
+          ? isLocalApi
+            ? `Cannot reach API at ${API_URL}. For local dev: same Wi‑Fi as your PC, backend running, and EXPO_PUBLIC_API_URL set to your PC IP. For live Render: use https://YOUR-SERVICE.onrender.com/api in mobile/.env, redeploy API, then restart Expo.`
+            : `Cannot reach API at ${API_URL}. Check Render is awake (open the URL in a browser), DATABASE_URL on Render, and mobile/.env uses https (not http). First request after sleep can take ~30s.`
           : message,
       );
       setNeedsRoleSelect(true);
