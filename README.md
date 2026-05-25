@@ -255,6 +255,10 @@ eas submit
 
 Set `EXPO_PUBLIC_*` variables in EAS secrets.
 
+### Test orders and rider tracking on a phone
+
+See **[mobile/TESTING-ORDERS.md](mobile/TESTING-ORDERS.md)** for the full Customer → Merchant → Rider flow and live map tracking.
+
 ### Admin (Vercel / Netlify)
 
 1. Root directory: `admin/`
