@@ -12,8 +12,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ridersApi } from '../../api/services';
 import { emitRiderLocation } from '../../api/socket';
 import { validateServiceArea } from '../../utils/location';
+import { Screen } from '../../components/Screen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function RiderDashboardScreen() {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [isOnline, setIsOnline] = useState(false);
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
@@ -129,8 +132,8 @@ export function RiderDashboardScreen() {
   );
 
   return (
-    <View className="flex-1 bg-surface">
-      <View className="bg-secondary px-4 pt-12 pb-4">
+    <Screen edges={['top', 'bottom']}>
+      <View className="bg-secondary px-4 pt-2 pb-4">
         <Text className="text-white text-xl font-bold">Rider Dashboard</Text>
         <View className="flex-row justify-between items-center mt-3">
           <View>
@@ -230,6 +233,7 @@ export function RiderDashboardScreen() {
           </Text>
           <FlatList
             data={availableOrders ?? []}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
             keyExtractor={(item: { id: string }) => item.id}
             renderItem={({ item }: { id: string; orderNumber: string; deliveryFee: number; merchant: { businessName: string }; address: { city: string } }) => (
               <View className="bg-white rounded-xl p-4 mb-3 border border-gray-100">
@@ -263,6 +267,6 @@ export function RiderDashboardScreen() {
           />
         </View>
       )}
-    </View>
+    </Screen>
   );
 }

@@ -13,6 +13,7 @@ import { geofenceApi, merchantsApi } from '../../api/services';
 import { useLocationStore } from '../../store';
 import { getLocationWithValidation } from '../../utils/location';
 import { ServiceAreaBanner } from '../../components/ServiceAreaBanner';
+import { Screen } from '../../components/Screen';
 import { Merchant } from '../../types';
 import { SUPPORTED_CITIES } from '../../constants/config';
 
@@ -96,7 +97,7 @@ export function HomeScreen({ onMerchantPress }: Props) {
   );
 
   return (
-    <View className="flex-1 bg-surface">
+    <Screen>
       {!inServiceArea && <ServiceAreaBanner />}
 
       <View className="px-4 pt-4 pb-2">
@@ -146,7 +147,7 @@ export function HomeScreen({ onMerchantPress }: Props) {
         data={data ?? []}
         keyExtractor={(item) => item.id}
         renderItem={renderMerchant}
-        contentContainerClassName="px-4 pb-4"
+        contentContainerClassName="px-4 pb-28"
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
@@ -158,6 +159,6 @@ export function HomeScreen({ onMerchantPress }: Props) {
           </View>
         }
       />
-    </View>
+    </Screen>
   );
 }

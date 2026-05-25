@@ -4,7 +4,9 @@ import MapView, { Marker } from 'react-native-maps';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '../../api/services';
 import { joinOrderRoom, onOrderStatus, onRiderLocation } from '../../api/socket';
+import { Screen } from '../../components/Screen';
 import { Order } from '../../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Order Placed',
@@ -23,6 +25,7 @@ interface Props {
 }
 
 export function OrdersScreen({ onOrderPress }: Props) {
+  const insets = useSafeAreaInsets();
   const { data: orders, refetch } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
@@ -32,14 +35,14 @@ export function OrdersScreen({ onOrderPress }: Props) {
   });
 
   return (
-    <View className="flex-1 bg-surface">
-      <View className="px-4 pt-4 pb-2">
+    <Screen>
+      <View className="px-4 pt-2 pb-2">
         <Text className="text-secondary text-xl font-bold">My Orders</Text>
       </View>
       <FlatList
         data={orders ?? []}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4"
+        contentContainerStyle={{ padding: 16, paddingBottom: 24 + insets.bottom + 56 }}
         onRefresh={refetch}
         refreshing={false}
         renderItem={({ item }) => (
@@ -65,7 +68,7 @@ export function OrdersScreen({ onOrderPress }: Props) {
           <Text className="text-center text-gray-400 py-20">No orders yet</Text>
         }
       />
-    </View>
+    </Screen>
   );
 }
 
@@ -74,6 +77,7 @@ interface TrackingProps {
 }
 
 export function OrderTrackingScreen({ orderId }: TrackingProps) {
+  const insets = useSafeAreaInsets();
   const [riderLocation, setRiderLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -152,8 +156,19 @@ export function OrderTrackingScreen({ orderId }: TrackingProps) {
         )}
       </MapView>
 
-      <View className="p-4 bg-white">
+      <View
+        className="p-4 bg-white border-t border-gray-100"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+      >
         <Text className="text-secondary font-semibold mb-2">Order Summary</Text>
+        {!riderLocation &&
+          (currentStatus === 'IN_TRANSIT' ||
+            currentStatus === 'PICKED_UP' ||
+            currentStatus === 'RIDER_ASSIGNED') && (
+            <Text className="text-gray-400 text-xs mb-2">
+              Rider location appears on the map when the rider is online and moving.
+            </Text>
+          )}
         {order.items.map((item) => (
           <Text key={item.id} className="text-gray-500 text-sm">
             {item.quantity}x {item.name} — ₱{(item.price * item.quantity).toFixed(2)}

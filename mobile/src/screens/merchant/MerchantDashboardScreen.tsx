@@ -12,6 +12,7 @@ import {
   merchantsApi,
   productsApi,
 } from '../../api/services';
+import { Screen } from '../../components/Screen';
 
 export function MerchantDashboardScreen() {
   const queryClient = useQueryClient();
@@ -84,8 +85,8 @@ export function MerchantDashboardScreen() {
   }
 
   return (
-    <View className="flex-1 bg-surface">
-      <View className="bg-secondary px-4 pt-12 pb-6">
+    <Screen edges={['top', 'bottom']}>
+      <View className="bg-secondary px-4 pt-2 pb-6">
         <Text className="text-white text-xl font-bold">
           {profile?.businessName}
         </Text>
@@ -214,6 +215,6 @@ export function MerchantDashboardScreen() {
           }
         />
       </View>
-    </View>
+    </Screen>
   );
 }

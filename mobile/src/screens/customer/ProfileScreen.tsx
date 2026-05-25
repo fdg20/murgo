@@ -14,8 +14,11 @@ import { addressesApi, usersApi } from '../../api/services';
 import { getLocationWithValidation } from '../../utils/location';
 import { Address } from '../../types';
 import { SUPPORTED_CITIES } from '../../constants/config';
+import { Screen } from '../../components/Screen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useUser();
   const { signOut } = useAuth();
   const queryClient = useQueryClient();
@@ -24,7 +27,7 @@ export function ProfileScreen() {
     label: 'Home',
     street: '',
     barangay: '',
-    city: 'Bacolod City',
+    city: 'Bacolod (Downtown)',
     latitude: 10.676,
     longitude: 122.951,
   });
@@ -61,8 +64,12 @@ export function ProfileScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-surface">
-      <View className="bg-secondary px-6 pt-12 pb-8">
+    <Screen edges={['top']}>
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ paddingBottom: 24 + insets.bottom + 56 }}
+    >
+      <View className="bg-secondary px-6 pt-4 pb-8">
         <Text className="text-white text-2xl font-bold">
           {user?.firstName} {user?.lastName}
         </Text>
@@ -154,5 +161,6 @@ export function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </Screen>
   );
 }

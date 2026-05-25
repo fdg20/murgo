@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Text, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeScreen } from '../screens/customer/HomeScreen';
 import { MerchantDetailScreen } from '../screens/customer/MerchantDetailScreen';
 import { CheckoutScreen } from '../screens/customer/CheckoutScreen';
@@ -29,12 +30,27 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
 }
 
 function CustomerTabs({ navigation }: { navigation: { navigate: (screen: string, params?: object) => void } }) {
+  const insets = useSafeAreaInsets();
+  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 8 : 0);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: '#E63946',
         tabBarInactiveTintColor: '#999',
+        tabBarHideOnKeyboard: true,
+        tabBarStyle: {
+          paddingTop: 6,
+          paddingBottom: tabBarBottom,
+          height: 56 + tabBarBottom,
+          borderTopWidth: 1,
+          borderTopColor: '#eee',
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          marginBottom: Platform.OS === 'ios' ? 0 : 4,
+        },
         tabBarIcon: ({ focused }) => (
           <TabIcon label={route.name} focused={focused} />
         ),
@@ -65,7 +81,12 @@ function CustomerTabs({ navigation }: { navigation: { navigate: (screen: string,
 
 export function CustomerNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerTintColor: '#1D3557',
+        contentStyle: { backgroundColor: '#F8F9FA' },
+      }}
+    >
       <Stack.Screen
         name="CustomerTabs"
         component={CustomerTabs}

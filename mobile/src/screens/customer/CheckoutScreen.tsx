@@ -12,6 +12,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { addressesApi, ordersApi } from '../../api/services';
 import { useCartStore } from '../../store';
 import { Address, CheckoutPreview } from '../../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   onOrderPlaced: (orderId: string) => void;
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function CheckoutScreen({ onOrderPlaced, onBack }: Props) {
+  const insets = useSafeAreaInsets();
   const { merchantId, items, promoCode, setPromoCode, clearCart } = useCartStore();
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [preview, setPreview] = useState<CheckoutPreview | null>(null);
@@ -78,7 +80,10 @@ export function CheckoutScreen({ onOrderPlaced, onBack }: Props) {
   });
 
   return (
-    <ScrollView className="flex-1 bg-surface">
+    <ScrollView
+      className="flex-1 bg-surface"
+      contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
+    >
       <View className="p-4">
         <Text className="text-secondary text-xl font-bold mb-4">Checkout</Text>
 
